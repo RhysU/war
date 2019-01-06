@@ -202,6 +202,7 @@ int main(int argc, char **argv)
     deck_t *w2 = deck_clear(deck_new());
 
     // Main loop
+    size_t round = 0;
     card_t c1, c2;
     while (deck_next(r, p1, d1, &c1) && deck_next(r, p2, d2, &c2)) {
 
@@ -263,9 +264,11 @@ int main(int argc, char **argv)
             }
         }
 
-        // Emit state after each (W)ar or (S)ingle card round
-        putchar(c1 == c2 ? 'W' : 'S');
-        putchar(',');
+        // Emit state after each (W)ar or (S)ingle card case
+        if (!round) {
+            printf("round,case,player1,discard1,player2,discard2\n");
+        }
+        printf("%zd,%c,", ++round, c1 == c2 ? 'W' : 'S');
         deck_putchar(p1);
         putchar(',');
         deck_putchar(d1);
@@ -276,6 +279,7 @@ int main(int argc, char **argv)
         putchar('\n');
     }
 
+    // Free resources
     free(p1);
     free(p2);
     free(d1);
