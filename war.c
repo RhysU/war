@@ -176,7 +176,6 @@ int war_outcome(deck_t *a, deck_t *b)
     return nb - na;
 }
 
-
 int main(int argc, char **argv)
 {
     // Simple positional parsing
@@ -198,7 +197,7 @@ int main(int argc, char **argv)
     deck_t *d1 = deck_clear(deck_new());
     deck_t *d2 = deck_clear(deck_new());
 
-    // War piles are initially empty
+    // War piles are empty after each main loop iteration
     deck_t *w1 = deck_clear(deck_new());
     deck_t *w2 = deck_clear(deck_new());
 
@@ -264,11 +263,14 @@ int main(int argc, char **argv)
             }
         }
 
+        // Emit state after each (W)ar or (S)ingle card round
+        putchar(c1 == c2 ? 'W' : 'S');
+        putchar(',');
         deck_putchar(p1);
         putchar(',');
-        deck_putchar(p2);
-        putchar(',');
         deck_putchar(d1);
+        putchar(',');
+        deck_putchar(p2);
         putchar(',');
         deck_putchar(d2);
         putchar('\n');
