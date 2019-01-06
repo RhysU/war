@@ -51,10 +51,10 @@ void deck_putchar(deck_t *d) {
 }
 
 // Shuffle a deck with Fisher--Yates
-void deck_shuffle(deck_t *d) {
+void deck_shuffle(pcg32_random_t *rng, deck_t *d) {
     size_t n = d->len;
     while ( n > 1 ) {
-        size_t k = pcg32_boundedrand(n--);
+        size_t k = pcg32_boundedrand_r(rng, n--);
         card_t t = d->card[n];
         d->card[n] = d->card[k];
         d->card[k] = t;
@@ -75,14 +75,14 @@ void deck_split(deck_t *src, size_t where, deck_t *a, deck_t *b) {
 // Otherwise shuffle the (d)iscard pile into (p)lay then draw.
 // A NULL (d)iscard pile indicates to only use the (p)lay pile.
 // Otherwise return false indicating no more cards available.
-bool deck_next(deck_t *p, deck_t *d, card_t *out) {
+bool deck_next(pcg32_random_t *rng, deck_t *p, deck_t *d, card_t *out) {
     if (p->len) {
         *out = p->card[--p->len];
         return true;
     }
 
     if (d && d->len) {
-        deck_shuffle(d);
+        deck_shuffle(rng, d);
         deck_split(d, d->len, p, d);
         *out = p->card[--p->len];
         return true;
@@ -157,13 +157,16 @@ int main(int argc, char **argv) {
     // Simple positional parsing
     const int warcards = argc > 1 ? atoi(argv[1]) : 4;
     const int pcg32seq = argc > 2 ? atoi(argv[2]) : 0;
-    pcg32_srandom(0x853c49e6748fea9bULL, 0xda3e39cb94b95bdbULL + pcg32seq);
     assert(warcards > 0);
+
+    // Seed the random number generator
+    pcg32_random_t r[1];
+    pcg32_srandom_r(r, 0x853c49e6748fea9bULL, 0xda3e39cb94b95bdbULL + pcg32seq);
 
     // State consists of two (p)layers and two (d)iscards.
     // A shuffled initial deck is divided between the players.
     deck_t *p1 = deck_new(), *p2 = deck_new();
-    deck_shuffle(p1);
+    deck_shuffle(r, p1);
     deck_split(p1, p1->len / 2, p1, p2);
 
     // Discard piles are initially empty
@@ -176,7 +179,7 @@ int main(int argc, char **argv) {
 
     // Main loop
     card_t c1, c2;
-    while (deck_next(p1, d1, &c1) && deck_next(p2, d2, &c2)) {
+    while (deck_next(r, p1, d1, &c1) && deck_next(r, p2, d2, &c2)) {
 
         if (c1 > c2) {  // Player 1 wins
 
@@ -192,10 +195,10 @@ int main(int argc, char **argv) {
 
             // War involves drawing some number of cards...
             card_t t;
-            for (size_t i = 0; i < warcards && deck_next(p1, d1, &t); ++i) {
+            for (size_t i = 0; i < warcards && deck_next(r, p1, d1, &t); ++i) {
                 deck_add(w1, t);
             }
-            for (size_t i = 0; i < warcards && deck_next(p2, d2, &t); ++i) {
+            for (size_t i = 0; i < warcards && deck_next(r, p2, d2, &t); ++i) {
                 deck_add(w2, t);
             }
 
@@ -205,22 +208,22 @@ int main(int argc, char **argv) {
 
                 deck_add(d1, c1);
                 deck_add(d1, c2);
-                while (deck_next(w1, NULL, &t)) deck_add(d1, t);
-                while (deck_next(w2, NULL, &t)) deck_add(d1, t);
+                while (deck_next(r, w1, NULL, &t)) deck_add(d1, t);
+                while (deck_next(r, w2, NULL, &t)) deck_add(d1, t);
 
             } else if (result > 0) {  // Player 2 wins
 
                 deck_add(d2, c1);
                 deck_add(d2, c2);
-                while (deck_next(w1, NULL, &t)) deck_add(d2, t);
-                while (deck_next(w2, NULL, &t)) deck_add(d2, t);
+                while (deck_next(r, w1, NULL, &t)) deck_add(d2, t);
+                while (deck_next(r, w2, NULL, &t)) deck_add(d2, t);
 
             } else { // Tie (wildly unlikely)
 
                 deck_add(d1, c1);
-                while (deck_next(w1, NULL, &t)) deck_add(d1, t);
+                while (deck_next(r, w1, NULL, &t)) deck_add(d1, t);
                 deck_add(d2, c2);
-                while (deck_next(w2, NULL, &t)) deck_add(d2, t);
+                while (deck_next(r, w2, NULL, &t)) deck_add(d2, t);
             }
         }
 
