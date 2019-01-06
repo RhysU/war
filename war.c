@@ -97,11 +97,11 @@ void deck_add(deck_t *d, card_t top) {
 }
 
 
-// Sort a deck such that higher cards will be drawn first.
+// Sort a deck such that higher cards will be drawn first
 // Adapted from http://www.codecodex.com/wiki/Heapsort
 void deck_sort(deck_t *d) {
     card_t * const arr = d->card, t;
-    size_t n = d->len, i = n / 2, parent, child;
+    size_t n = d->len, i = n / 2;
 
     for (;;) {
         if (i > 0) {
@@ -112,8 +112,8 @@ void deck_sort(deck_t *d) {
             arr[n] = arr[0];
         }
 
-        parent = i;
-        child = i*2 + 1;
+        size_t parent = i;
+        size_t child = i*2 + 1;
 
         while (child < n) {
             if (child + 1 < n  &&  arr[child + 1] > arr[child]) {
@@ -149,6 +149,7 @@ int main(int argc, char **argv) {
     deck_putchar(p2);
     putchar('\n');
 
+    // Some simple sorting tests
     deck_sort(p1);
     deck_clear(p2);
     deck_add(p2, 2);
@@ -158,6 +159,10 @@ int main(int argc, char **argv) {
 
     deck_putchar(p1);
     putchar('|');
+    deck_putchar(p2);
+    putchar('|');
+    deck_clear(p2);
+    deck_sort(p2);
     deck_putchar(p2);
     putchar('\n');
 
