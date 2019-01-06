@@ -271,9 +271,11 @@ int main(int argc, char **argv)
 
         // Emit state after each (W)ar or (S)ingle card case
         if (!round) {
-            printf("round,case,player1,discard1,player2,discard2\n");
+            printf("pcg32seq,warcards"
+                   ",round,case,player1,discard1,player2,discard2\n");
         }
-        printf("%zd,%c,", ++round, c1 == c2 ? 'W' : 'S');
+        printf("%d,%d,%zd,%c,",
+                pcg32seq, warcards, ++round, c1 == c2 ? 'W' : 'S');
         deck_putchar(p1);
         putchar(',');
         deck_putchar(d1);
