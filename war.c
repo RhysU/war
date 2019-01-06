@@ -96,6 +96,41 @@ void deck_add(deck_t *d, card_t top) {
     d->card[d->len++] = top;
 }
 
+
+// Sort a deck such that higher cards will be drawn first.
+// Adapted from http://www.codecodex.com/wiki/Heapsort
+void deck_sort(deck_t *d) {
+    card_t * const arr = d->card, t;
+    size_t n = d->len, i = n / 2, parent, child;
+
+    for (;;) {
+        if (i > 0) {
+            t = arr[--i];
+        } else {
+            if (n-- <= 1) return;  // Allows zero-length input!
+            t = arr[n];
+            arr[n] = arr[0];
+        }
+
+        parent = i;
+        child = i*2 + 1;
+
+        while (child < n) {
+            if (child + 1 < n  &&  arr[child + 1] > arr[child]) {
+                ++child;
+            }
+            if (arr[child] > t) {
+                arr[parent] = arr[child];
+                parent = child;
+                child = parent*2 + 1;
+            } else {
+                break;
+            }
+        }
+        arr[parent] = t;
+    }
+}
+
 int main(int argc, char **argv) {
     // Simple positional parsing
     const int warcards = argc > 1 ? atoi(argv[1]) : 4;
@@ -109,49 +144,75 @@ int main(int argc, char **argv) {
     deck_shuffle(p1);
     deck_split(p1, p1->len / 2, p1, p2);
 
-    // Discard piles are initially empty
-    deck_t *d1 = deck_clear(deck_new());
-    deck_t *d2 = deck_clear(deck_new());
+    deck_putchar(p1);
+    putchar('|');
+    deck_putchar(p2);
+    putchar('\n');
 
-    // War piles are initially empty
-    deck_t *w1 = deck_clear(deck_new());
-    deck_t *w2 = deck_clear(deck_new());
+    deck_sort(p1);
+    deck_clear(p2);
+    deck_add(p2, 2);
+    deck_add(p2, 7);
+    deck_add(p2, 5);
+    deck_sort(p2);
 
-    // Main loop
-    card_t c1, c2;
-    while (deck_next(p1, d1, &c1) && deck_next(p2, d2, &c2)) {
+    deck_putchar(p1);
+    putchar('|');
+    deck_putchar(p2);
+    putchar('\n');
 
-        if (c1 > c2) {
-            deck_add(d1, c1);
-            deck_add(d1, c2);
-        } else if (c2 > c1) {
-            deck_add(d2, c1);
-            deck_add(d2, c2);
-        } else {
-            card_t t;
-            for (size_t i = 0; i < warcards && deck_next(p1, d1, &t); ++i) {
-                deck_add(w1, t);
-            }
-            for (size_t i = 0; i < warcards && deck_next(p2, d2, &t); ++i) {
-                deck_add(w2, t);
-            }
-            // FIXME
-        }
-
-        deck_putchar(p1);
-        putchar(',');
-        deck_putchar(d1);
-        putchar(',');
-        deck_putchar(p2);
-        putchar(',');
-        deck_putchar(d2);
-        putchar('\n');
-    }
-
-    free(p1);
-    free(p2);
-    free(d1);
-    free(d2);
-    free(w1);
-    free(w2);
+//  // Discard piles are initially empty
+//  deck_t *d1 = deck_clear(deck_new());
+//  deck_t *d2 = deck_clear(deck_new());
+//
+//  // War piles are initially empty
+//  deck_t *w1 = deck_clear(deck_new());
+//  deck_t *w2 = deck_clear(deck_new());
+//
+//  // Main loop
+//  card_t c1, c2;
+//  while (deck_next(p1, d1, &c1) && deck_next(p2, d2, &c2)) {
+//
+//      if (c1 > c2) {
+//
+//          // Player 1 wins
+//          deck_add(d1, c1);
+//          deck_add(d1, c2);
+//
+//      } else if (c2 > c1) {
+//
+//          // Player 2 wins
+//          deck_add(d2, c1);
+//          deck_add(d2, c2);
+//
+//      } else {
+//
+//          // War involves drawing...
+//          card_t t;
+//          for (size_t i = 0; i < warcards && deck_next(p1, d1, &t); ++i) {
+//              deck_add(w1, t);
+//          }
+//          for (size_t i = 0; i < warcards && deck_next(p2, d2, &t); ++i) {
+//              deck_add(w2, t);
+//          }
+//          // ...then determining who won.
+//          // FIXME
+//      }
+//
+//      deck_putchar(p1);
+//      putchar(',');
+//      deck_putchar(d1);
+//      putchar(',');
+//      deck_putchar(p2);
+//      putchar(',');
+//      deck_putchar(d2);
+//      putchar('\n');
+//  }
+//
+//  free(p1);
+//  free(p2);
+//  free(d1);
+//  free(d2);
+//  free(w1);
+//  free(w2);
 }
