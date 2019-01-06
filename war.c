@@ -144,80 +144,58 @@ int main(int argc, char **argv) {
     deck_shuffle(p1);
     deck_split(p1, p1->len / 2, p1, p2);
 
-    deck_putchar(p1);
-    putchar('|');
-    deck_putchar(p2);
-    putchar('\n');
+    // Discard piles are initially empty
+    deck_t *d1 = deck_clear(deck_new());
+    deck_t *d2 = deck_clear(deck_new());
 
-    // Some simple sorting tests
-    deck_sort(p1);
-    deck_clear(p2);
-    deck_add(p2, 2);
-    deck_add(p2, 7);
-    deck_add(p2, 5);
-    deck_sort(p2);
+    // War piles are initially empty
+    deck_t *w1 = deck_clear(deck_new());
+    deck_t *w2 = deck_clear(deck_new());
 
-    deck_putchar(p1);
-    putchar('|');
-    deck_putchar(p2);
-    putchar('|');
-    deck_clear(p2);
-    deck_sort(p2);
-    deck_putchar(p2);
-    putchar('\n');
+    // Main loop
+    card_t c1, c2;
+    while (deck_next(p1, d1, &c1) && deck_next(p2, d2, &c2)) {
 
-//  // Discard piles are initially empty
-//  deck_t *d1 = deck_clear(deck_new());
-//  deck_t *d2 = deck_clear(deck_new());
-//
-//  // War piles are initially empty
-//  deck_t *w1 = deck_clear(deck_new());
-//  deck_t *w2 = deck_clear(deck_new());
-//
-//  // Main loop
-//  card_t c1, c2;
-//  while (deck_next(p1, d1, &c1) && deck_next(p2, d2, &c2)) {
-//
-//      if (c1 > c2) {
-//
-//          // Player 1 wins
-//          deck_add(d1, c1);
-//          deck_add(d1, c2);
-//
-//      } else if (c2 > c1) {
-//
-//          // Player 2 wins
-//          deck_add(d2, c1);
-//          deck_add(d2, c2);
-//
-//      } else {
-//
-//          // War involves drawing...
-//          card_t t;
-//          for (size_t i = 0; i < warcards && deck_next(p1, d1, &t); ++i) {
-//              deck_add(w1, t);
-//          }
-//          for (size_t i = 0; i < warcards && deck_next(p2, d2, &t); ++i) {
-//              deck_add(w2, t);
-//          }
-//          // ...then determining who won.
-//          // FIXME
-//      }
-//
-//      deck_putchar(p1);
-//      putchar(',');
-//      deck_putchar(d1);
-//      putchar(',');
-//      deck_putchar(p2);
-//      putchar(',');
-//      deck_putchar(d2);
-//      putchar('\n');
-//  }
-//
-//  free(p1);
-//  free(p2);
-//  free(d1);
-//  free(d2);
-//  free(w1);
-//  free(w2);
+        if (c1 > c2) {
+
+            // Player 1 wins
+            deck_add(d1, c1);
+            deck_add(d1, c2);
+
+        } else if (c2 > c1) {
+
+            // Player 2 wins
+            deck_add(d2, c1);
+            deck_add(d2, c2);
+
+        } else {
+
+            // War involves drawing...
+            card_t t;
+            for (size_t i = 0; i < warcards && deck_next(p1, d1, &t); ++i) {
+                deck_add(w1, t);
+            }
+            for (size_t i = 0; i < warcards && deck_next(p2, d2, &t); ++i) {
+                deck_add(w2, t);
+            }
+            // ...then determining who won.
+            // FIXME
+        }
+
+        deck_putchar(p1);
+        putchar(',');
+        deck_putchar(d1);
+        putchar(',');
+        deck_putchar(p2);
+        putchar(',');
+        deck_putchar(d2);
+        putchar('\n');
+    }
+
+    free(p1);
+    free(p2);
+    free(d1);
+    free(d2);
+    free(w1);
+    free(w2);
 }
