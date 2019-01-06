@@ -1,5 +1,5 @@
-CFLAGS=-std=c99 -Wall -Werror -O3
-ROUNDS=10
+CFLAGS := -std=c99 -Wall -Werror -O3
+ROUNDS := 1000
 
 all: data.csv.gz
 
