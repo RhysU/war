@@ -71,16 +71,17 @@ void deck_split(deck_t *src, size_t where, deck_t *a, deck_t *b) {
     memmove(b->card, &src->card[a->len], b->len * sizeof(card_t));
 }
 
-// Draw next card from the (p)lay pile.
+// Draw next card from the (p)lay pile into *out returning true.
 // Otherwise shuffle the (d)iscard pile into (p)lay then draw.
-// Otherwise return false as the player has lost.
+// A NULL (d)iscard pile indicates to only use the (p)lay pile.
+// Otherwise return false indicating no more cards available.
 bool deck_next(deck_t *p, deck_t *d, card_t *out) {
     if (p->len) {
         *out = p->card[--p->len];
         return true;
     }
 
-    if (d->len) {
+    if (d && d->len) {
         deck_shuffle(d);
         deck_split(d, d->len, p, d);
         *out = p->card[--p->len];
@@ -131,6 +132,15 @@ void deck_sort(deck_t *d) {
     }
 }
 
+// Return -1 if (a) wins, 0 if a tie, +1 if (b) wins.
+// Provided decks are permuted but all cards are retained.
+int war_winner(deck_t *a, deck_t *b) {
+    deck_sort(a);
+    deck_sort(b);
+    // FIXME
+    return -1;
+}
+
 int main(int argc, char **argv) {
     // Simple positional parsing
     const int warcards = argc > 1 ? atoi(argv[1]) : 4;
@@ -156,19 +166,17 @@ int main(int argc, char **argv) {
     card_t c1, c2;
     while (deck_next(p1, d1, &c1) && deck_next(p2, d2, &c2)) {
 
-        if (c1 > c2) {
+        if (c1 > c2) {  // Player 1 wins
 
-            // Player 1 wins
             deck_add(d1, c1);
             deck_add(d1, c2);
 
-        } else if (c2 > c1) {
+        } else if (c2 > c1) {  // Player 2 wins
 
-            // Player 2 wins
             deck_add(d2, c1);
             deck_add(d2, c2);
 
-        } else {
+        } else {  // Tie
 
             // War involves drawing...
             card_t t;
@@ -178,15 +186,37 @@ int main(int argc, char **argv) {
             for (size_t i = 0; i < warcards && deck_next(p2, d2, &t); ++i) {
                 deck_add(w2, t);
             }
-            // ...then determining who won.
-            // FIXME
+
+            // ...then dividing any spoils per the outcome:
+            int result = war_winner(w1, w2);
+            if (result < 0) {  // Player 1 wins
+
+                deck_add(d1, c1);
+                deck_add(d1, c2);
+                while (deck_next(w1, NULL, &t)) deck_add(d1, t);
+                while (deck_next(w2, NULL, &t)) deck_add(d1, t);
+
+            } else if (result > 0) {  // Player 2 wins
+
+                deck_add(d2, c1);
+                deck_add(d2, c2);
+                while (deck_next(w1, NULL, &t)) deck_add(d2, t);
+                while (deck_next(w2, NULL, &t)) deck_add(d2, t);
+
+            } else { // Tie (wildly unlikely)
+
+                deck_add(d1, c1);
+                while (deck_next(w1, NULL, &t)) deck_add(d1, t);
+                deck_add(d2, c2);
+                while (deck_next(w2, NULL, &t)) deck_add(d2, t);
+            }
         }
 
         deck_putchar(p1);
         putchar(',');
-        deck_putchar(d1);
-        putchar(',');
         deck_putchar(p2);
+        putchar(',');
+        deck_putchar(d1);
         putchar(',');
         deck_putchar(d2);
         putchar('\n');
