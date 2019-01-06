@@ -10,14 +10,18 @@
 // For War only the face value is of interest hence one scalar
 typedef uint16_t card_t;
 
+
 // Common playing card conventions
 static const size_t FACES = 13;
 static const size_t SUITS = 4;
 
+
 // Output a card value as something humans might recognize
-void card_putchar(card_t c) {
+void card_putchar(card_t c)
+{
     putchar("234567890JQKA"[c]);
 }
+
 
 // Convention is that that card[len-1] is the top
 typedef struct deck_t {
@@ -25,8 +29,10 @@ typedef struct deck_t {
     card_t card[0];
 } deck_t;
 
+
 // Malloc a new deck which the caller must free
-deck_t* deck_new() {
+deck_t* deck_new()
+{
     deck_t *t = malloc(sizeof(deck_t) + SUITS * FACES * sizeof(card_t));
     t->len = SUITS * FACES;
     for (size_t i = 0; i < SUITS; ++i) {
@@ -37,21 +43,27 @@ deck_t* deck_new() {
     return t;
 }
 
-// Make the deck have length zero
-deck_t* deck_clear(deck_t *d) {
+
+// Make given deck have length zero
+deck_t* deck_clear(deck_t *d)
+{
     d->len = 0;
     return d;
 }
 
+
 // Print a deck onto stdout
-void deck_putchar(deck_t *d) {
+void deck_putchar(deck_t *d)
+{
     for (size_t i = d->len; i --> 0;) {
         card_putchar(d->card[i]);
     }
 }
 
+
 // Shuffle a deck with Fisher--Yates
-void deck_shuffle(pcg32_random_t *rng, deck_t *d) {
+void deck_shuffle(pcg32_random_t *rng, deck_t *d)
+{
     size_t n = d->len;
     while ( n > 1 ) {
         size_t k = pcg32_boundedrand_r(rng, n--);
@@ -61,8 +73,10 @@ void deck_shuffle(pcg32_random_t *rng, deck_t *d) {
     }
 }
 
+
 // Split src into decks A and B, allowing src to be deck A.
-void deck_split(deck_t *src, size_t where, deck_t *a, deck_t *b) {
+void deck_split(deck_t *src, size_t where, deck_t *a, deck_t *b)
+{
     assert(where <= src->len);
     size_t n = src->len; // As src may alias a
     a->len = where;
@@ -71,11 +85,13 @@ void deck_split(deck_t *src, size_t where, deck_t *a, deck_t *b) {
     memmove(b->card, &src->card[a->len], b->len * sizeof(card_t));
 }
 
+
 // Draw next card from the (p)lay pile into *out returning true.
 // Otherwise shuffle the (d)iscard pile into (p)lay then draw.
 // A NULL (d)iscard pile indicates to only use the (p)lay pile.
 // Return false whenever no more cards available leaving out undefined.
-bool deck_next(pcg32_random_t *rng, deck_t *p, deck_t *d, card_t *out) {
+bool deck_next(pcg32_random_t *rng, deck_t *p, deck_t *d, card_t *out)
+{
     if (p->len) {
         *out = p->card[--p->len];
         return true;
@@ -93,7 +109,8 @@ bool deck_next(pcg32_random_t *rng, deck_t *p, deck_t *d, card_t *out) {
 
 
 // Add a card to the top of a deck
-void deck_add(deck_t *d, card_t top) {
+void deck_add(deck_t *d, card_t top)
+{
     assert(d->len <= FACES * SUITS);
     d->card[d->len++] = top;
 }
@@ -101,7 +118,8 @@ void deck_add(deck_t *d, card_t top) {
 
 // Sort a deck such that higher cards will be drawn first
 // Adapted from http://www.codecodex.com/wiki/Heapsort
-void deck_sort(deck_t *d) {
+void deck_sort(deck_t *d)
+{
     card_t * const arr = d->card, t;
     size_t n = d->len, i = n / 2;
 
@@ -109,7 +127,9 @@ void deck_sort(deck_t *d) {
         if (i > 0) {
             t = arr[--i];
         } else {
-            if (n-- <= 1) return;  // Allows zero-length input!
+            if (n-- <= 1) {
+                return;    // Allows zero-length input!
+            }
             t = arr[n];
             arr[n] = arr[0];
         }
@@ -136,7 +156,8 @@ void deck_sort(deck_t *d) {
 
 // Return negative if (a) wins, 0 if a tie, positive if (b) wins.
 // Provided decks are permuted but all cards are retained.
-int war_winner(deck_t *a, deck_t *b) {
+int war_winner(deck_t *a, deck_t *b)
+{
     deck_sort(a);
     deck_sort(b);
 
@@ -155,7 +176,9 @@ int war_winner(deck_t *a, deck_t *b) {
     return nb - na;
 }
 
-int main(int argc, char **argv) {
+
+int main(int argc, char **argv)
+{
     // Simple positional parsing
     const int warcards = argc > 1 ? atoi(argv[1]) : 4;
     const int pcg32seq = argc > 2 ? atoi(argv[2]) : 0;
@@ -210,22 +233,34 @@ int main(int argc, char **argv) {
 
                 deck_add(d1, c1);
                 deck_add(d1, c2);
-                while (deck_next(r, w1, NULL, &t)) deck_add(d1, t);
-                while (deck_next(r, w2, NULL, &t)) deck_add(d1, t);
+                while (deck_next(r, w1, NULL, &t)) {
+                    deck_add(d1, t);
+                }
+                while (deck_next(r, w2, NULL, &t)) {
+                    deck_add(d1, t);
+                }
 
             } else if (result > 0) {  // Player 2 wins
 
                 deck_add(d2, c1);
                 deck_add(d2, c2);
-                while (deck_next(r, w1, NULL, &t)) deck_add(d2, t);
-                while (deck_next(r, w2, NULL, &t)) deck_add(d2, t);
+                while (deck_next(r, w1, NULL, &t)) {
+                    deck_add(d2, t);
+                }
+                while (deck_next(r, w2, NULL, &t)) {
+                    deck_add(d2, t);
+                }
 
             } else { // Tie (wildly unlikely)
 
                 deck_add(d1, c1);
-                while (deck_next(r, w1, NULL, &t)) deck_add(d1, t);
+                while (deck_next(r, w1, NULL, &t)) {
+                    deck_add(d1, t);
+                }
                 deck_add(d2, c2);
-                while (deck_next(r, w2, NULL, &t)) deck_add(d2, t);
+                while (deck_next(r, w2, NULL, &t)) {
+                    deck_add(d2, t);
+                }
             }
         }
 
