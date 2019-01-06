@@ -156,7 +156,7 @@ void deck_sort(deck_t *d)
 
 // Return negative if (a) wins, 0 if a tie, positive if (b) wins.
 // Provided decks are permuted but all cards are retained.
-int war_winner(deck_t *a, deck_t *b)
+int war_outcome(deck_t *a, deck_t *b)
 {
     deck_sort(a);
     deck_sort(b);
@@ -228,8 +228,8 @@ int main(int argc, char **argv)
             }
 
             // ...then dividing any spoils per its outcome:
-            int result = war_winner(w1, w2);
-            if (result < 0) {  // Player 1 wins
+            int outcome = war_outcome(w1, w2);
+            if (outcome < 0) {  // Player 1 wins
 
                 deck_add(d1, c1);
                 deck_add(d1, c2);
@@ -240,7 +240,7 @@ int main(int argc, char **argv)
                     deck_add(d1, t);
                 }
 
-            } else if (result > 0) {  // Player 2 wins
+            } else if (outcome > 0) {  // Player 2 wins
 
                 deck_add(d2, c1);
                 deck_add(d2, c2);
