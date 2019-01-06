@@ -10,15 +10,20 @@
 // For War only the face value is of interest hence one scalar
 typedef uint16_t card_t;
 
+// Common playing card conventions
+static const size_t FACES = 13;
+static const size_t SUITS = 4;
+
+// Output a card value as something humans might recognize
+void card_putchar(card_t c) {
+    putchar("234567890JQKA"[c]);
+}
+
 // Convention is that that card[len-1] is the top
 typedef struct deck_t {
     size_t len;
     card_t card[0];
 } deck_t;
-
-// Common playing card conventions
-static const size_t FACES = 13;
-static const size_t SUITS = 4;
 
 // Malloc a new deck which the caller must free
 deck_t* deck_new() {
@@ -36,11 +41,6 @@ deck_t* deck_new() {
 deck_t* deck_clear(deck_t *d) {
     d->len = 0;
     return d;
-}
-
-// Output a card value as something humans might recognize
-void card_putchar(card_t c) {
-    putchar("234567890JQKA"[c]);
 }
 
 // Print a deck onto stdout
@@ -74,7 +74,7 @@ void deck_split(deck_t *src, size_t where, deck_t *a, deck_t *b) {
 // Draw next card from the (p)lay pile into *out returning true.
 // Otherwise shuffle the (d)iscard pile into (p)lay then draw.
 // A NULL (d)iscard pile indicates to only use the (p)lay pile.
-// Otherwise return false indicating no more cards available.
+// Return false whenever no more cards available leaving out undefined.
 bool deck_next(pcg32_random_t *rng, deck_t *p, deck_t *d, card_t *out) {
     if (p->len) {
         *out = p->card[--p->len];
@@ -90,6 +90,7 @@ bool deck_next(pcg32_random_t *rng, deck_t *p, deck_t *d, card_t *out) {
 
     return false;
 }
+
 
 // Add a card to the top of a deck
 void deck_add(deck_t *d, card_t top) {
@@ -131,6 +132,7 @@ void deck_sort(deck_t *d) {
         arr[parent] = t;
     }
 }
+
 
 // Return negative if (a) wins, 0 if a tie, positive if (b) wins.
 // Provided decks are permuted but all cards are retained.
