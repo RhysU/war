@@ -1,3 +1,8 @@
+/*
+ * war: simulates the card game war with variable-sized wars.
+ * Licensed under the Apache License, Version 2.0.
+ */
+
 #include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -179,8 +184,8 @@ int war_outcome(deck_t *a, deck_t *b)
 int main(int argc, char **argv)
 {
     // Simple positional parsing
-    const int warcards = argc > 1 ? atoi(argv[1]) : 4;
-    const int pcg32seq = argc > 2 ? atoi(argv[2]) : 0;
+    const int pcg32seq = argc > 1 ? atoi(argv[1]) : 0;
+    const int warcards = argc > 2 ? atoi(argv[2]) : 4;
     assert(warcards > 0);
 
     // Seed the random number generator
