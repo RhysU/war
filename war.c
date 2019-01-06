@@ -186,7 +186,7 @@ int main(int argc, char **argv)
     // Simple positional parsing
     const int pcg32seq = argc > 1 ? atoi(argv[1]) : 0;
     const int warcards = argc > 2 ? atoi(argv[2]) : 4;
-    assert(warcards > 0);
+    assert(0 < warcards && warcards <= FACES * SUITS);
 
     // Seed the random number generator
     pcg32_random_t r[1];
